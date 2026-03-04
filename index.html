@@ -231,6 +231,7 @@
         .input-group {
             display: flex;
             gap: 12px;
+            margin-bottom: 15px; /* NEW: Added margin for spacing */
         }
         
         /* Input field - WHITE BACKGROUND, BLACK TEXT (unchanged) */
@@ -258,6 +259,45 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3), 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* NEW: Styles for extra input fields */
+        .extra-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .input-field {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .input-field label {
+            color: white;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .input-field input,
+        .input-field select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: white;
+            color: black;
+            font-size: 0.95em;
+        }
+        
+        .input-field input:focus,
+        .input-field select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         
         /* Liquid glass button - text uses gradient */
@@ -361,6 +401,37 @@
             flex: 1;
         }
         
+        /* NEW: Container for task metadata (due date, priority, actions) */
+        .task-metadata {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        /* NEW: Due date badge */
+        .due-date-badge {
+            font-size: 0.8em;
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 20px;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        /* NEW: Priority badge */
+        .priority-badge {
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border-radius: 20px;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
         /* Action buttons container */
         .task-actions {
             display: flex;
@@ -450,6 +521,10 @@
                 flex-direction: column;
             }
             
+            .extra-inputs {
+                flex-direction: column;
+            }
+            
             button {
                 width: 100%;
                 justify-content: center;
@@ -459,6 +534,11 @@
                 flex-direction: column;
                 gap: 12px;
                 align-items: flex-start;
+            }
+            
+            .task-metadata {
+                align-items: flex-start;
+                width: 100%;
             }
             
             .task-actions {
@@ -497,6 +577,25 @@
                     <button onclick="addTask()">
                         <span>✨ Create</span>
                     </button>
+                </div>
+                
+                <!-- NEW: Extra input fields for Due Date and Priority -->
+                <div class="extra-inputs">
+                    <!-- Due Date Input -->
+                    <div class="input-field">
+                        <label>📅 Due Date:</label>
+                        <input type="date" id="dueDateInput">
+                    </div>
+                    
+                    <!-- Priority Dropdown -->
+                    <div class="input-field">
+                        <label>⚡ Priority:</label>
+                        <select id="priorityInput">
+                            <option value="low">🟢 Low</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="high">🔴 High</option>
+                        </select>
+                    </div>
                 </div>
                 <!-- TODO: FEATURE EXTENSION POINT 4 - Add extra input fields here
                      Examples: Due date picker, priority dropdown, category selector -->
@@ -589,9 +688,16 @@
                 return;
             }
             
-            // Add the new task to our array
+            // NEW: Get due date and priority values
+            const dueDate = document.getElementById('dueDateInput').value;
+            const priority = document.getElementById('priorityInput').value;
+            
+            // Add the new task to our array with due date and priority
             tasks.push({
                 text: taskText,
+                dueDate: dueDate || "No date",  // If no date selected, show "No date"
+                priority: priority,              // low, medium, or high
+                completed: false,                // will use this later for completion
                 // TODO: FEATURE EXTENSION POINT 1 - Add more properties here
                 // Examples: 
                 // dueDate: "2024-12-25",
@@ -601,8 +707,9 @@
                 // createdAt: new Date()
             });
             
-            // Clear the input field and keep focus
+            // Clear the input fields and keep focus
             input.value = '';
+            document.getElementById('dueDateInput').value = ''; // NEW: Clear date field
             input.focus();
             
             // Update the display
@@ -640,20 +747,67 @@
                 taskDiv.className = 'task-item';
                 taskDiv.id = `task-${i}`;
                 
-                // Add the task text with actions container
+                // NEW: Format due date for better display
+                let dueDateDisplay = "No date";
+                if (task.dueDate && task.dueDate !== "No date") {
+                    const date = new Date(task.dueDate);
+                    dueDateDisplay = date.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                }
+                
+                // Add the task text with metadata and actions container
                 taskDiv.innerHTML = `
                     <span class="task-text">${escapeHtml(task.text)}</span>
-                    <!-- TODO: FEATURE EXTENSION POINT 2 - Add buttons/controls here -->
-                    <div class="task-actions" id="actions-${i}">
-                        <!-- Examples:
-                        <button style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer;" onclick="deleteTask(${i})">🗑️</button>
-                        <button style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer;" onclick="editTask(${i})">✏️</button>
-                        <input type="checkbox" onchange="toggleComplete(${i})">
-                        -->
+                    
+                    <!-- NEW: Task metadata container -->
+                    <div class="task-metadata">
+                        <!-- Due Date Badge -->
+                        <span class="due-date-badge">
+                            📅 ${dueDateDisplay}
+                        </span>
+                        
+                        <!-- Priority Badge with Color -->
+                        <span class="priority-badge" style="background: ${getPriorityColor(task.priority)};">
+                            ${getPriorityIcon(task.priority)} ${task.priority}
+                        </span>
+                        
+                        <!-- TODO: FEATURE EXTENSION POINT 2 - Add buttons/controls here -->
+                        <div class="task-actions" id="actions-${i}">
+                            <!-- Examples:
+                            <button style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer;" onclick="deleteTask(${i})">🗑️</button>
+                            <button style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer;" onclick="editTask(${i})">✏️</button>
+                            <input type="checkbox" onchange="toggleComplete(${i})">
+                            -->
+                        </div>
                     </div>
                 `;
                 
                 container.appendChild(taskDiv);
+            }
+        }
+
+        // ============================================
+        // NEW: Helper Functions for Priority Display
+        // ============================================
+        
+        function getPriorityColor(priority) {
+            switch(priority) {
+                case 'high': return '#ff4757';  // Red
+                case 'medium': return '#ffa502'; // Orange
+                case 'low': return '#26de81';    // Green
+                default: return '#747d8c';       // Gray
+            }
+        }
+        
+        function getPriorityIcon(priority) {
+            switch(priority) {
+                case 'high': return '🔴';
+                case 'medium': return '🟡';
+                case 'low': return '🟢';
+                default: return '⚪';
             }
         }
 
