@@ -353,6 +353,11 @@
             border-color: #667eea;
         }
         
+        .completed-task {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
         /* Task text - BLACK (unchanged) */
         .task-text {
             font-size: 1.1em;
@@ -592,6 +597,7 @@
             // Add the new task to our array
             tasks.push({
                 text: taskText,
+                completed: false,
                 // TODO: FEATURE EXTENSION POINT 1 - Add more properties here
                 // Examples: 
                 // dueDate: "2024-12-25",
@@ -608,6 +614,14 @@
             // Update the display
             displayTasks();
             updateTaskCount();
+        }
+
+        //=============================================
+        //FUNCTION: Toggle task completion
+        //=============================================
+        function toggleComplete(index) {
+            tasks[index].completed = !tasks[index].completed;
+            displayTasks(); // Refresh the display
         }
 
         // ============================================
@@ -640,16 +654,21 @@
                 taskDiv.className = 'task-item';
                 taskDiv.id = `task-${i}`;
                 
-                // Add the task text with actions container
+               // Determine if task is completed
+                const isCompleted = task.completed ? 'completed-task' : '';
+                const textDecoration = task.completed ? 'style="text-decoration: line-through; opacity: 0.7;"' : '';
+
                 taskDiv.innerHTML = `
-                    <span class="task-text">${escapeHtml(task.text)}</span>
-                    <!-- TODO: FEATURE EXTENSION POINT 2 - Add buttons/controls here -->
+                    <span class="task-text" ${textDecoration}>${escapeHtml(task.text)}</span>
                     <div class="task-actions" id="actions-${i}">
-                        <!-- Examples:
-                        <button style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer;" onclick="deleteTask(${i})">🗑️</button>
-                        <button style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer;" onclick="editTask(${i})">✏️</button>
-                        <input type="checkbox" onchange="toggleComplete(${i})">
-                        -->
+                        <!-- Mark Complete Checkbox -->
+                        <input 
+                            type="checkbox" 
+                            ${task.completed ? 'checked' : ''} 
+                            onchange="toggleComplete(${i})"
+                            style="width: 20px; height: 20px; cursor: pointer; accent-color: #667eea;"
+                        >
+                        <!-- TODO: FEATURE EXTENSION POINT 2 - Add more buttons here -->
                     </div>
                 `;
                 
