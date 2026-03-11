@@ -231,6 +231,7 @@
         .input-group {
             display: flex;
             gap: 12px;
+            margin-bottom: 15px;
         }
         
         /* Input field - WHITE BACKGROUND, BLACK TEXT (unchanged) */
@@ -258,6 +259,45 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3), 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Styles for extra input fields */
+        .extra-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .input-field {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .input-field label {
+            color: white;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .input-field input,
+        .input-field select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: white;
+            color: black;
+            font-size: 0.95em;
+        }
+        
+        .input-field input:focus,
+        .input-field select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         
         /* Liquid glass button - text uses gradient */
@@ -366,11 +406,43 @@
             flex: 1;
         }
         
+        /* Container for task metadata (due date, priority, actions) */
+        .task-metadata {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        /* Due date badge */
+        .due-date-badge {
+            font-size: 0.8em;
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 20px;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        /* Priority badge */
+        .priority-badge {
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border-radius: 20px;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
         /* Action buttons container */
         .task-actions {
             display: flex;
             gap: 8px;
-            margin-left: 15px;
+            margin-top: 5px;
+            justify-content: flex-end;
         }
         
         /* Empty state - WHITE BACKGROUND, BLACK TEXT (unchanged) */
@@ -455,6 +527,10 @@
                 flex-direction: column;
             }
             
+            .extra-inputs {
+                flex-direction: column;
+            }
+            
             button {
                 width: 100%;
                 justify-content: center;
@@ -466,10 +542,15 @@
                 align-items: flex-start;
             }
             
+            .task-metadata {
+                align-items: flex-start;
+                width: 100%;
+            }
+            
             .task-actions {
                 margin-left: 0;
                 width: 100%;
-                justify-content: flex-end;
+                justify-content: flex-start;
             }
         }
     </style>
@@ -503,8 +584,25 @@
                         <span>✨ Create</span>
                     </button>
                 </div>
-                <!-- TODO: FEATURE EXTENSION POINT 4 - Add extra input fields here
-                     Examples: Due date picker, priority dropdown, category selector -->
+                
+                <!-- Extra input fields for Due Date and Priority -->
+                <div class="extra-inputs">
+                    <!-- Due Date Input -->
+                    <div class="input-field">
+                        <label>📅 Due Date:</label>
+                        <input type="date" id="dueDateInput">
+                    </div>
+                    
+                    <!-- Priority Dropdown -->
+                    <div class="input-field">
+                        <label>⚡ Priority:</label>
+                        <select id="priorityInput">
+                            <option value="low">🟢 Low</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="high">🔴 High</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             
             <!-- SECTION 2: Display all tasks -->
@@ -594,21 +692,21 @@
                 return;
             }
             
-            // Add the new task to our array
+            // Get due date and priority values
+            const dueDate = document.getElementById('dueDateInput').value;
+            const priority = document.getElementById('priorityInput').value;
+            
+            // Add the new task to our array with due date, priority, and completed status
             tasks.push({
                 text: taskText,
-                completed: false,
-                // TODO: FEATURE EXTENSION POINT 1 - Add more properties here
-                // Examples: 
-                // dueDate: "2024-12-25",
-                // priority: "high",
-                // completed: false,
-                // category: "work",
-                // createdAt: new Date()
+                dueDate: dueDate || "No date",  // If no date selected, show "No date"
+                priority: priority,              // low, medium, or high
+                completed: false                 // Track completion status
             });
             
-            // Clear the input field and keep focus
+            // Clear the input fields and keep focus
             input.value = '';
+            document.getElementById('dueDateInput').value = ''; // Clear date field
             input.focus();
             
             // Update the display
@@ -617,7 +715,7 @@
         }
 
         //=============================================
-        //FUNCTION: Toggle task completion
+        // FUNCTION: Toggle task completion
         //=============================================
         function toggleComplete(index) {
             tasks[index].completed = !tasks[index].completed;
@@ -654,25 +752,73 @@
                 taskDiv.className = 'task-item';
                 taskDiv.id = `task-${i}`;
                 
-               // Determine if task is completed
-                const isCompleted = task.completed ? 'completed-task' : '';
+                // Format due date for better display
+                let dueDateDisplay = "No date";
+                if (task.dueDate && task.dueDate !== "No date") {
+                    const date = new Date(task.dueDate);
+                    dueDateDisplay = date.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                }
+                
+                // Determine if task is completed for text styling
                 const textDecoration = task.completed ? 'style="text-decoration: line-through; opacity: 0.7;"' : '';
-
+                
+                // Create the task HTML - combining due date, priority, AND checkbox
                 taskDiv.innerHTML = `
                     <span class="task-text" ${textDecoration}>${escapeHtml(task.text)}</span>
-                    <div class="task-actions" id="actions-${i}">
-                        <!-- Mark Complete Checkbox -->
-                        <input 
-                            type="checkbox" 
-                            ${task.completed ? 'checked' : ''} 
-                            onchange="toggleComplete(${i})"
-                            style="width: 20px; height: 20px; cursor: pointer; accent-color: #667eea;"
-                        >
-                        <!-- TODO: FEATURE EXTENSION POINT 2 - Add more buttons here -->
+                    
+                    <!-- Task metadata container -->
+                    <div class="task-metadata">
+                        <!-- Due Date Badge -->
+                        <span class="due-date-badge">
+                            📅 ${dueDateDisplay}
+                        </span>
+                        
+                        <!-- Priority Badge with Color -->
+                        <span class="priority-badge" style="background: ${getPriorityColor(task.priority)};">
+                            ${getPriorityIcon(task.priority)} ${task.priority}
+                        </span>
+                        
+                        <!-- Action buttons with checkbox -->
+                        <div class="task-actions" id="actions-${i}">
+                            <!-- Mark Complete Checkbox -->
+                            <input 
+                                type="checkbox" 
+                                ${task.completed ? 'checked' : ''} 
+                                onchange="toggleComplete(${i})"
+                                style="width: 20px; height: 20px; cursor: pointer; accent-color: #667eea;"
+                                title="Mark as complete"
+                            >
+                        </div>
                     </div>
                 `;
                 
                 container.appendChild(taskDiv);
+            }
+        }
+
+        // ============================================
+        // Helper Functions for Priority Display
+        // ============================================
+        
+        function getPriorityColor(priority) {
+            switch(priority) {
+                case 'high': return '#ff4757';  // Red
+                case 'medium': return '#ffa502'; // Orange
+                case 'low': return '#26de81';    // Green
+                default: return '#747d8c';       // Gray
+            }
+        }
+        
+        function getPriorityIcon(priority) {
+            switch(priority) {
+                case 'high': return '🔴';
+                case 'medium': return '🟡';
+                case 'low': return '🟢';
+                default: return '⚪';
             }
         }
 
@@ -699,20 +845,6 @@
                 addTask();
             }
         });
-
-        // ============================================
-        // FUTURE FEATURE IDEAS (for group mates):
-        // 1. Delete tasks - remove specific task
-        // 2. Due dates - add date picker
-        // 3. Priority levels - High/Medium/Low with colors
-        // 4. Search/filter - filter visible tasks
-        // 5. Mark as complete - checkbox strike-through
-        // 6. Categories - group tasks
-        // 7. Save to localStorage - persistence
-        // 8. Edit tasks - modify task text
-        // 9. Drag to reorder - change task order
-        // 10. Due date reminders - highlight overdue
-        // ============================================
     </script>
 </body>
 </html>
