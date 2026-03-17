@@ -344,6 +344,54 @@
             transform: translateY(0);
         }
         
+        /* Small action buttons (Delete button style) */
+        .action-btn {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .action-btn span {
+            /* Button text uses gradient */
+            background: linear-gradient(125deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+        
+        .delete-btn span {
+            background: linear-gradient(125deg, #ff6b6b, #ee5253) !important;
+            background-clip: text !important;
+            -webkit-background-clip: text !important;
+        }
+        
+        .delete-btn:hover {
+            border-color: #ff6b6b;
+        }
+        
         /* Tasks header */
         .tasks-header {
             display: flex;
@@ -443,6 +491,7 @@
             gap: 8px;
             margin-top: 5px;
             justify-content: flex-end;
+            align-items: center;
         }
         
         /* Empty state - WHITE BACKGROUND, BLACK TEXT (unchanged) */
@@ -471,6 +520,35 @@
         .empty-icon {
             font-size: 4em;
             margin-bottom: 20px;
+        }
+        
+        /* Delete confirmation toast */
+        .delete-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #333;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
         }
         
         /* Decorative glass elements */
@@ -627,7 +705,7 @@
             <ul>
                 <li>
                     <strong><span class="tip-icon">🗑️</span> Delete tasks</strong>
-                    <span>Add a delete button to remove specific tasks</span>
+                    <span>Click the delete button to remove tasks</span>
                 </li>
                 <li>
                     <strong><span class="tip-icon">📅</span> Due dates</strong>
@@ -659,6 +737,11 @@
                 </li>
             </ul>
         </div>
+    </div>
+
+    <!-- Delete confirmation toast (hidden by default) -->
+    <div id="deleteToast" class="delete-toast" style="display: none;">
+        🗑️ Task deleted successfully!
     </div>
 
     <script>
@@ -722,6 +805,37 @@
             displayTasks(); // Refresh the display
         }
 
+        //=============================================
+        // FUNCTION: Delete a task
+        //=============================================
+        function deleteTask(index) {
+            // Show confirmation dialog
+            if (confirm('Are you sure you want to delete this task?')) {
+                // Remove the task from the array
+                tasks.splice(index, 1);
+                
+                // Update the display
+                displayTasks();
+                updateTaskCount();
+                
+                // Show success message
+                showDeleteToast();
+            }
+        }
+
+        //=============================================
+        // FUNCTION: Show delete confirmation toast
+        //=============================================
+        function showDeleteToast() {
+            const toast = document.getElementById('deleteToast');
+            toast.style.display = 'block';
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
         // ============================================
         // FUNCTION: Display all tasks
         // ============================================
@@ -766,7 +880,7 @@
                 // Determine if task is completed for text styling
                 const textDecoration = task.completed ? 'style="text-decoration: line-through; opacity: 0.7;"' : '';
                 
-                // Create the task HTML - combining due date, priority, AND checkbox
+                // Create the task HTML - combining due date, priority, checkbox, AND DELETE BUTTON
                 taskDiv.innerHTML = `
                     <span class="task-text" ${textDecoration}>${escapeHtml(task.text)}</span>
                     
@@ -782,8 +896,13 @@
                             ${getPriorityIcon(task.priority)} ${task.priority}
                         </span>
                         
-                        <!-- Action buttons with checkbox -->
+                        <!-- Action buttons with checkbox and delete button -->
                         <div class="task-actions" id="actions-${i}">
+                            <!-- DELETE BUTTON -->
+                            <button class="action-btn delete-btn" onclick="deleteTask(${i})" title="Delete task">
+                                <span>🗑️ Delete</span>
+                            </button>
+                            
                             <!-- Mark Complete Checkbox -->
                             <input 
                                 type="checkbox" 
