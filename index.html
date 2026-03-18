@@ -392,12 +392,95 @@
             border-color: #ff6b6b;
         }
         
+        /* Search and filter section */
+        .search-section {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 2;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: white;
+            color: black;
+            font-size: 1em;
+        }
+        
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            opacity: 0.5;
+        }
+        
+        .filter-select {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 15px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: white;
+            color: black;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Clear search button */
+        .clear-search {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: white;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-search:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Storage indicator */
+        .storage-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 5px 12px;
+            border-radius: 50px;
+            color: white;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        
         /* Tasks header */
         .tasks-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         /* Glass task counter - white text on glass */
@@ -630,6 +713,14 @@
                 width: 100%;
                 justify-content: flex-start;
             }
+            
+            .search-section {
+                flex-direction: column;
+            }
+            
+            .search-box, .filter-select, .clear-search {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -643,7 +734,7 @@
         <div class="main-content">
             <h1>
                 <span>🥛 Liquid Glass</span>
-                <span>v1.0</span>
+                <span>v2.0</span>
             </h1>
             
             <!-- SECTION 1: Add new tasks -->
@@ -683,7 +774,39 @@
                 </div>
             </div>
             
-            <!-- SECTION 2: Display all tasks -->
+            <!-- SECTION 2: Search and Filter -->
+            <div class="glass-section">
+                <h2>
+                    <span>🔍 Search & Filter</span>
+                    <span class="storage-indicator" id="storageIndicator">💾 Saved</span>
+                </h2>
+                <div class="search-section">
+                    <div class="search-box">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Search tasks..." 
+                            oninput="filterTasks()"
+                        >
+                    </div>
+                    <select id="filterPriority" class="filter-select" onchange="filterTasks()">
+                        <option value="all">⚪ All Priorities</option>
+                        <option value="high">🔴 High Priority</option>
+                        <option value="medium">🟡 Medium Priority</option>
+                        <option value="low">🟢 Low Priority</option>
+                    </select>
+                    <select id="filterStatus" class="filter-select" onchange="filterTasks()">
+                        <option value="all">📋 All Tasks</option>
+                        <option value="active">✅ Active</option>
+                        <option value="completed">✔️ Completed</option>
+                    </select>
+                    <button class="clear-search" onclick="clearSearch()">
+                        <span>🗑️ Clear</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- SECTION 3: Display all tasks -->
             <div class="glass-section">
                 <div class="tasks-header">
                     <h2>
@@ -697,43 +820,43 @@
             </div>
         </div>
         
-        <!-- RIGHT SIDE: Permanent tips panel (no dropdown) -->
+        <!-- RIGHT SIDE: Permanent tips panel with updated features -->
         <div class="tips-panel">
             <h3>
-                <span>💡 Feature Ideas</span>
+                <span>💡 New Features!</span>
             </h3>
             <ul>
                 <li>
+                    <strong><span class="tip-icon">💾</span> Auto-save</strong>
+                    <span>Tasks are saved automatically</span>
+                </li>
+                <li>
+                    <strong><span class="tip-icon">🔍</span> Search tasks</strong>
+                    <span>Real-time search by text</span>
+                </li>
+                <li>
+                    <strong><span class="tip-icon">⚡</span> Filter by priority</strong>
+                    <span>High/Medium/Low only</span>
+                </li>
+                <li>
+                    <strong><span class="tip-icon">✅</span> Filter by status</strong>
+                    <span>Active or completed tasks</span>
+                </li>
+                <li>
                     <strong><span class="tip-icon">🗑️</span> Delete tasks</strong>
-                    <span>Click the delete button to remove tasks</span>
+                    <span>Click the delete button</span>
                 </li>
                 <li>
                     <strong><span class="tip-icon">📅</span> Due dates</strong>
-                    <span>Add date picker when creating tasks</span>
+                    <span>Add date when creating</span>
                 </li>
                 <li>
-                    <strong><span class="tip-icon">⚡</span> Priority levels</strong>
-                    <span>High/Medium/Low with color coding</span>
+                    <strong><span class="tip-icon">🔄</span> Persistent</strong>
+                    <span>Tasks survive refresh</span>
                 </li>
                 <li>
-                    <strong><span class="tip-icon">🔍</span> Search/filter</strong>
-                    <span>Box to filter visible tasks</span>
-                </li>
-                <li>
-                    <strong><span class="tip-icon">✅</span> Mark complete</strong>
-                    <span>Checkbox that strikes through text</span>
-                </li>
-                <li>
-                    <strong><span class="tip-icon">🏷️</span> Categories</strong>
-                    <span>Group tasks by project/type</span>
-                </li>
-                <li>
-                    <strong><span class="tip-icon">💾</span> Local storage</strong>
-                    <span>Tasks persist after refresh</span>
-                </li>
-                <li>
-                    <strong><span class="tip-icon">✏️</span> Edit tasks</strong>
-                    <span>Modify existing task text</span>
+                    <strong><span class="tip-icon">✨</span> Clear search</strong>
+                    <span>One-click reset filters</span>
                 </li>
             </ul>
         </div>
@@ -744,13 +867,92 @@
         🗑️ Task deleted successfully!
     </div>
 
+    <!-- Save confirmation toast -->
+    <div id="saveToast" class="delete-toast" style="display: none; background: rgba(102, 126, 234, 0.95); color: white;">
+        💾 Tasks saved to local storage!
+    </div>
+
     <script>
         // ============================================
-        // LIQUID GLASS TASK LIST - Core functionality
+        // LIQUID GLASS TASK LIST - Enhanced with Search & Local Storage
         // ============================================
         
         // Array to store all tasks
         let tasks = [];
+        
+        // Current search term and filters
+        let currentSearchTerm = '';
+        let currentPriorityFilter = 'all';
+        let currentStatusFilter = 'all';
+
+        // ============================================
+        // LOCAL STORAGE FUNCTIONS
+        // ============================================
+        
+        // Save tasks to local storage
+        function saveToLocalStorage() {
+            localStorage.setItem('liquidGlassTasks', JSON.stringify(tasks));
+            
+            // Show save indicator briefly
+            const indicator = document.getElementById('storageIndicator');
+            indicator.style.opacity = '1';
+            indicator.textContent = '💾 Saved!';
+            
+            setTimeout(() => {
+                indicator.textContent = '💾 Saved';
+            }, 2000);
+            
+            // Also show toast for visual feedback
+            showSaveToast();
+        }
+        
+        // Load tasks from local storage
+        function loadFromLocalStorage() {
+            const savedTasks = localStorage.getItem('liquidGlassTasks');
+            if (savedTasks) {
+                try {
+                    tasks = JSON.parse(savedTasks);
+                } catch (e) {
+                    console.error('Failed to load tasks:', e);
+                    tasks = [];
+                }
+            } else {
+                // Add sample tasks if no saved data exists
+                tasks = [
+                    {
+                        text: "Welcome to Liquid Glass Tasks!",
+                        dueDate: new Date().toISOString().split('T')[0],
+                        priority: "medium",
+                        completed: false
+                    },
+                    {
+                        text: "Try searching for tasks",
+                        dueDate: "No date",
+                        priority: "low",
+                        completed: false
+                    },
+                    {
+                        text: "Filter by priority (High)",
+                        dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                        priority: "high",
+                        completed: false
+                    }
+                ];
+            }
+        }
+
+        // ============================================
+        // FUNCTION: Show save confirmation toast
+        // ============================================
+        function showSaveToast() {
+            const toast = document.getElementById('saveToast');
+            toast.style.display = 'block';
+            
+            // Hide after 1.5 seconds
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 1500);
+        }
 
         // ============================================
         // FUNCTION: Update task count display
@@ -792,8 +994,11 @@
             document.getElementById('dueDateInput').value = ''; // Clear date field
             input.focus();
             
-            // Update the display
-            displayTasks();
+            // Save to local storage
+            saveToLocalStorage();
+            
+            // Update the display (respecting current filters)
+            filterTasks();
             updateTaskCount();
         }
 
@@ -802,7 +1007,12 @@
         //=============================================
         function toggleComplete(index) {
             tasks[index].completed = !tasks[index].completed;
-            displayTasks(); // Refresh the display
+            
+            // Save to local storage
+            saveToLocalStorage();
+            
+            // Refresh the display (respecting current filters)
+            filterTasks();
         }
 
         //=============================================
@@ -814,8 +1024,11 @@
                 // Remove the task from the array
                 tasks.splice(index, 1);
                 
-                // Update the display
-                displayTasks();
+                // Save to local storage
+                saveToLocalStorage();
+                
+                // Update the display (respecting current filters)
+                filterTasks();
                 updateTaskCount();
                 
                 // Show success message
@@ -837,28 +1050,94 @@
         }
 
         // ============================================
-        // FUNCTION: Display all tasks
+        // SEARCH AND FILTER FUNCTIONS
         // ============================================
-        function displayTasks() {
+        
+        // Get current filter values
+        function getFilterValues() {
+            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            currentPriorityFilter = document.getElementById('filterPriority').value;
+            currentStatusFilter = document.getElementById('filterStatus').value;
+        }
+        
+        // Check if a task matches current filters
+        function taskMatchesFilters(task) {
+            // Search filter
+            if (currentSearchTerm && !task.text.toLowerCase().includes(currentSearchTerm)) {
+                return false;
+            }
+            
+            // Priority filter
+            if (currentPriorityFilter !== 'all' && task.priority !== currentPriorityFilter) {
+                return false;
+            }
+            
+            // Status filter
+            if (currentStatusFilter === 'active' && task.completed) {
+                return false;
+            }
+            if (currentStatusFilter === 'completed' && !task.completed) {
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Filter tasks based on current filters
+        function filterTasks() {
+            getFilterValues();
+            displayFilteredTasks();
+        }
+        
+        // Clear all search filters
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterPriority').value = 'all';
+            document.getElementById('filterStatus').value = 'all';
+            
+            currentSearchTerm = '';
+            currentPriorityFilter = 'all';
+            currentStatusFilter = 'all';
+            
+            displayFilteredTasks();
+        }
+        
+        // Display only tasks that match current filters
+        function displayFilteredTasks() {
             const container = document.getElementById('taskContainer');
             
             // Clear the container first
             container.innerHTML = '';
             
-            // If no tasks, show empty state
-            if (tasks.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">✨</div>
-                        <p>Your canvas is empty</p>
-                        <p>Add a task to begin</p>
-                    </div>
-                `;
+            // Filter tasks
+            const filteredTasks = tasks.filter(task => taskMatchesFilters(task));
+            
+            // If no tasks match filters, show empty state
+            if (filteredTasks.length === 0) {
+                if (tasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">✨</div>
+                            <p>Your canvas is empty</p>
+                            <p>Add a task to begin</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <p>No tasks match your filters</p>
+                            <p>Try adjusting your search criteria</p>
+                        </div>
+                    `;
+                }
                 return;
             }
             
-            // Loop through all tasks and display each one
+            // Loop through all tasks and display each matching one
             for (let i = 0; i < tasks.length; i++) {
+                if (!taskMatchesFilters(tasks[i])) continue;
+                
                 const task = tasks[i];
                 
                 // Create a div for this task
@@ -951,9 +1230,14 @@
         }
 
         // ============================================
-        // INITIAL DISPLAY
+        // INITIALIZATION
         // ============================================
-        displayTasks();
+        
+        // Load tasks from local storage
+        loadFromLocalStorage();
+        
+        // Display tasks
+        displayFilteredTasks();
         updateTaskCount();
 
         // ============================================
@@ -963,6 +1247,13 @@
             if (e.key === 'Enter') {
                 addTask();
             }
+        });
+        
+        // ============================================
+        // AUTO-SAVE ON PAGE UNLOAD (just in case)
+        // ============================================
+        window.addEventListener('beforeunload', function() {
+            saveToLocalStorage();
         });
     </script>
 </body>
